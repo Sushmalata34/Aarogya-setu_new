@@ -1,0 +1,148 @@
+
+.about-page {
+  color: #183b5e;
+}
+
+.about-hero {
+  padding: 80px 8%;
+  text-align: center;
+  background: linear-gradient(135deg, #eaf5ff, #f8fbff);
+}
+
+.about-hero h1 {
+  max-width: 850px;
+  margin: 0 auto 20px;
+  color: #173e68;
+  font-size: clamp(34px, 5vw, 52px);
+  line-height: 1.2;
+}
+
+.about-hero > p:not(.section-eyebrow) {
+  max-width: 720px;
+  margin: 0 auto 25px;
+  color: #62778d;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.about-hero button,
+.about-commitment button {
+  padding: 13px 22px;
+  border: none;
+  border-radius: 9px;
+  background: #0878d1;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.about-intro {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  align-items: center;
+  gap: 35px;
+  width: min(1050px, 88%);
+  margin: 0 auto;
+  padding: 75px 0;
+}
+
+.about-symbol {
+  display: grid;
+  place-items: center;
+  width: 160px;
+  height: 160px;
+  border-radius: 35px;
+  background: #eaf4ff;
+  font-size: 65px;
+}
+
+.about-intro h2 {
+  margin: 0 0 18px;
+  color: #173e68;
+  font-size: clamp(27px, 3.5vw, 36px);
+}
+
+.about-intro p:not(.section-eyebrow) {
+  color: #65798e;
+  line-height: 1.9;
+}
+
+.about-mission {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  width: min(1100px, 90%);
+  margin: 0 auto;
+  padding-bottom: 75px;
+}
+
+.about-mission article {
+  padding: 28px;
+  border: 1px solid #e2edf8;
+  border-radius: 17px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(24, 67, 112, 0.06);
+}
+
+.about-mission article span {
+  font-size: 32px;
+}
+
+.about-mission h3 {
+  color: #214b75;
+  font-size: 20px;
+}
+
+.about-mission article p {
+  color: #65798e;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.about-commitment {
+  margin: 0 auto 70px;
+  padding: 48px 6%;
+  width: min(1100px, 90%);
+  border-radius: 20px;
+  background: #eff7ff;
+  text-align: center;
+}
+
+.about-commitment h2 {
+  color: #173e68;
+  font-size: clamp(26px, 4vw, 36px);
+}
+
+.about-commitment p {
+  margin: 0 auto 24px;
+  max-width: 650px;
+  color: #65798e;
+  line-height: 1.8;
+}
+
+@media (max-width: 700px) {
+  .about-hero {
+    padding: 55px 6%;
+  }
+
+  .about-intro {
+    grid-template-columns: 1fr;
+    padding: 45px 0;
+  }
+
+  .about-symbol {
+    width: 100px;
+    height: 100px;
+    border-radius: 24px;
+    font-size: 45px;
+  }
+
+  .about-mission {
+    grid-template-columns: 1fr;
+    padding-bottom: 45px;
+  }
+
+  .about-commitment {
+    padding: 30px 22px;
+  }
+}

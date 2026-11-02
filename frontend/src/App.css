@@ -1,0 +1,98 @@
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app main {
+  flex: 1;
+}
+
+.account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.account-form > p {
+  color: #64758a;
+  line-height: 1.6;
+}
+
+.account-form label {
+  margin-top: 8px;
+  color: #234564;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.account-form input,
+.account-form select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #d5e1ee;
+  border-radius: 9px;
+  background: #ffffff;
+  font: inherit;
+}
+
+.account-submit {
+  width: 100%;
+  margin-top: 12px;
+  padding: 13px;
+  border: none;
+  border-radius: 9px;
+  background: #176fca;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.account-submit:hover {
+  background: #1059a7;
+}
+
+.account-notice {
+  padding: 12px;
+  border-radius: 8px;
+  background: #edf6ff;
+  color: #174d80 !important;
+  overflow-wrap: anywhere;
+}
+
+.account-switch {
+  text-align: center;
+}
+
+.account-switch button {
+  border: none;
+  background: transparent;
+  color: #176fca;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sos-content {
+  text-align: center;
+  color: #354b60;
+  line-height: 1.7;
+}
+
+.sos-symbol {
+  display: grid;
+  width: 55px;
+  height: 55px;
+  margin: 0 auto 15px;
+  place-items: center;
+  border-radius: 50%;
+  background: #ffeded;
+  color: #d62828;
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.sos-content h3 {
+  color: #17324f;
+}
