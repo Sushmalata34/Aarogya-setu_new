@@ -96,3 +96,20 @@
 .sos-content h3 {
   color: #17324f;
 }
+
+.app-notice {
+  padding: 12px 20px;
+  background: #e8f3ff;
+  color: #194779;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.app-notice button {
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+}

@@ -1,9 +1,9 @@
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import Modal from "./components/Modal";
+import EmergencySOS from "./components/EmergencySOS";
 
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -13,124 +13,310 @@ import WorkEarn from "./pages/WorkEarn";
 import Contact from "./pages/Contact";
 
 import "./App.css";
+import "./styles/Modal.css";
 
-export default function App() {
-  const [currentPage, setCurrentPage] = useState("home");
+function App() {
+
+  // PAGE STATE
+  const [currentPage, setCurrentPage] = useState(
+    localStorage.getItem("currentPage") || "home"
+  );
+
+  // MODAL STATE
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [showSOS, setShowSOS] = useState(false);
 
+  // USER STATE
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user")) || null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return Boolean(
+      localStorage.getItem("token") &&
+      localStorage.getItem("user")
+    );
+  });
+
+  // FORM DATA
   const [loginData, setLoginData] = useState({
     email: "",
-    password: "",
+    password: ""
   });
 
   const [registerData, setRegisterData] = useState({
     name: "",
     email: "",
-    password: "",
-    role: "User",
+    password: ""
   });
 
   const [notice, setNotice] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function navigateTo(page) {
-    setCurrentPage(page);
+  // NOTIFICATION TIMER
+  const noticeTimer = useRef(null);
+
+  // SHOW SUCCESS MESSAGE AND AUTO HIDE AFTER 1 SECOND
+  const showSuccessNotice = (message) => {
+
+    if (noticeTimer.current) {
+      clearTimeout(noticeTimer.current);
+    }
+
+    setNotice(message);
+
+    noticeTimer.current = setTimeout(() => {
+      setNotice("");
+      noticeTimer.current = null;
+    }, 1000);
+
+  };
+
+  // CLEAR TIMER ON UNMOUNT
+  useEffect(() => {
+    return () => {
+      if (noticeTimer.current) {
+        clearTimeout(noticeTimer.current);
+      }
+    };
+  }, []);
+
+  // NAVIGATION
+  const navigateTo = (page) => {
+
+    const pageMap = {
+      home: "home",
+      about: "about",
+      services: "services",
+      community: "community",
+      work: "work",
+      "work & earn": "work",
+      contact: "contact"
+    };
+
+    const selectedPage = pageMap[String(page).trim().toLowerCase()];
+
+    if (!selectedPage) return;
+
+    setCurrentPage(selectedPage);
+    localStorage.setItem("currentPage", selectedPage);
+
     setShowLogin(false);
     setShowRegister(false);
     setShowSOS(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-  
-  async function handleLogin(event) {
-    event.preventDefault();
 
-    const form = event.currentTarget;
-    const formData = new FormData(form);
+    setNotice("");
 
-    const email = String(formData.get("email") || "").trim();
-    const password = String(formData.get("password") || "");
+    if (noticeTimer.current) {
+      clearTimeout(noticeTimer.current);
+      noticeTimer.current = null;
+    }
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  };
+
+  // OPEN LOGIN
+  const openLogin = () => {
+    setNotice("");
+    setShowRegister(false);
+    setShowLogin(true);
+  };
+
+  // OPEN REGISTER
+  const openRegister = () => {
+    setNotice("");
+    setShowLogin(false);
+    setShowRegister(true);
+  };
+
+  // LOGIN FUNCTION
+  const handleLogin = async (e) => {
+
+    e.preventDefault();
+
+    if (loading) return;
+
+    setLoading(true);
+    setNotice("");
 
     try {
-      setNotice("Logging in...");
 
-      const response = await fetch("http://localhost:5000/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await fetch(
+        "http://localhost:5000/api/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email: loginData.email.trim(),
+            password: loginData.password
+          })
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Login failed. Please check your details.");
+        setNotice(data.message || "Login failed.");
+        return;
       }
 
-      setNotice(data.message || "Login successful!");
+      const userData = data.user || data;
+
+      const loggedInUser = {
+        name:
+          userData.name ||
+          userData.fullName ||
+          userData.username ||
+          loginData.email.split("@")[0],
+
+        email: userData.email || loginData.email.trim(),
+
+        role: userData.role || userData.accountType || "User"
+      };
+
+      // SAVE USER AND TOKEN
+      localStorage.setItem(
+        "user",
+        JSON.stringify(loggedInUser)
+      );
+
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+
+      setUser(loggedInUser);
+      setIsLoggedIn(true);
+
+      setLoginData({
+        email: "",
+        password: ""
+      });
+
+      setShowLogin(false);
+      setShowRegister(false);
+
+      setCurrentPage("home");
+      localStorage.setItem("currentPage", "home");
+
+      showSuccessNotice("Login successful!");
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+
     } catch (error) {
-      setNotice(error.message || "Backend se connection nahi ho pa raha hai.");
+
+      console.error("Login error:", error);
+      setNotice("Server connection failed. Check backend.");
+
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
-  
-async function handleRegister(event) {
-  event.preventDefault();
+  // REGISTER FUNCTION
+  const handleRegister = async (e) => {
 
-  const { name, email, password, role } = registerData;
+    e.preventDefault();
 
-  if (!name.trim() || !email.trim() || !password) {
-    setNotice("Please enter your name, email and password.");
-    return;
-  }
+    if (loading) return;
 
-  if (password.length < 6) {
-    setNotice("Password must contain at least 6 characters.");
-    return;
-  }
+    setLoading(true);
+    setNotice("");
 
-  try {
-    setNotice("Creating your account...");
+    try {
 
-    const response = await fetch("http://localhost:5000/api/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: name.trim(),
-        email: email.trim().toLowerCase(),
-        password,
-        role: role === "User" ? "customer" : role,
-      }),
-    });
+      const response = await fetch(
+        "http://localhost:5000/api/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: registerData.name.trim(),
+            email: registerData.email.trim(),
+            password: registerData.password
+          })
+        }
+      );
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.message || "Registration failed.");
+      if (!response.ok) {
+        setNotice(data.message || "Registration failed.");
+        return;
+      }
+
+      setRegisterData({
+        name: "",
+        email: "",
+        password: ""
+      });
+
+      setShowRegister(false);
+      setShowLogin(true);
+
+      showSuccessNotice("Registration successful! Please login.");
+
+    } catch (error) {
+
+      console.error("Register error:", error);
+      setNotice("Server connection failed. Check backend.");
+
+    } finally {
+      setLoading(false);
     }
+  };
 
-    setNotice(
-      data.message || "Registration successful! Your account has been saved."
-    );
+  // LOGOUT FUNCTION
+  const handleLogout = () => {
 
-    setRegisterData({
-      name: "",
-      email: "",
-      password: "",
-      role: "User",
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    setUser(null);
+    setIsLoggedIn(false);
+
+    setShowLogin(false);
+    setShowRegister(false);
+    setShowSOS(false);
+
+    setCurrentPage("home");
+    localStorage.setItem("currentPage", "home");
+
+    showSuccessNotice("You have been logged out successfully.");
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
     });
-  } catch (error) {
-    setNotice(error.message || "Backend connection failed.");
-  }
-}
+  };
 
+  // PAGE RENDERING
+  const renderPage = () => {
 
-
-  function renderPage() {
     switch (currentPage) {
+
+      case "home":
+        return (
+          <Home
+            onNavigate={navigateTo}
+            onRegister={openRegister}
+          />
+        );
+
       case "about":
         return <About onNavigate={navigateTo} />;
 
@@ -141,222 +327,251 @@ async function handleRegister(event) {
         return <Community onNavigate={navigateTo} />;
 
       case "work":
-        return <WorkEarn />;
+        return <WorkEarn onNavigate={navigateTo} />;
 
       case "contact":
-        return <Contact />;
+        return <Contact onNavigate={navigateTo} />;
 
-      case "home":
       default:
         return (
           <Home
             onNavigate={navigateTo}
-            onRegister={() => {
-              setNotice("");
-              setShowRegister(true);
-            }}
+            onRegister={openRegister}
           />
         );
     }
-  }
+  };
 
+  // MAIN APP
   return (
     <div className="app">
+
+      {/* NAVBAR */}
       <Navbar
-        activePage={currentPage}
+        currentPage={
+          currentPage === "work"
+            ? "Work & Earn"
+            : currentPage.charAt(0).toUpperCase() +
+              currentPage.slice(1)
+        }
         onNavigate={navigateTo}
-        onLogin={() => {
-          setNotice("");
-          setShowLogin(true);
-        }}
-        onRegister={() => {
-          setNotice("");
-          setShowRegister(true);
-        }}
+        onLogin={openLogin}
+        onRegister={openRegister}
         onSOS={() => setShowSOS(true)}
+        isLoggedIn={isLoggedIn}
+        user={user}
+        onLogout={handleLogout}
       />
 
-      <main>{renderPage()}</main>
+      {/* PROFESSIONAL NOTIFICATION */}
+      {notice && !showLogin && !showRegister && (
+        <div className="success-toast">
 
+          <div className="toast-icon">
+            ✓
+          </div>
+
+          <span className="toast-message">
+            {notice}
+          </span>
+
+          <button
+            type="button"
+            className="toast-close"
+            onClick={() => {
+
+              setNotice("");
+
+              if (noticeTimer.current) {
+                clearTimeout(noticeTimer.current);
+                noticeTimer.current = null;
+              }
+
+            }}
+          >
+            ×
+          </button>
+
+        </div>
+      )}
+
+      {/* PAGE CONTENT */}
+      <main>
+        {renderPage()}
+      </main>
+
+      {/* FOOTER */}
       <Footer onNavigate={navigateTo} />
 
-      <Modal
-        isOpen={showLogin}
-        onClose={() => setShowLogin(false)}
-        title="Welcome Back"
-      >
-        <form className="account-form" onSubmit={handleLogin}>
-          <p>Login to your Aarogya Setu account.</p>
-
-          <label htmlFor="login-email">Email Address</label>
-          <input
-            id="login-email"
-            name="email"
-            type="email"
-            value={loginData.email}
-            onChange={(event) =>
-              setLoginData({
-                ...loginData,
-                email: event.target.value,
-              })
-            }
-            placeholder="Enter your email"
-            required
-          />
-
-          <label htmlFor="login-password">Password</label>
-          <input
-            id="login-password"
-            name="password"
-            type="password"
-            value={loginData.password}
-            onChange={(event) =>
-              setLoginData({
-                ...loginData,
-                password: event.target.value,
-              })
-            }
-            placeholder="Enter your password"
-            required
-          />
-
-          <button className="account-submit" type="submit">
-            Login
-          </button>
-
-          {notice && <p className="account-notice">{notice}</p>}
-
-          <p className="account-switch">
-            Don't have an account?{" "}
-            <button
-              type="button"
-              onClick={() => {
-                setNotice("");
-                setShowLogin(false);
-                setShowRegister(true);
-              }}
-            >
-              Register
-            </button>
-          </p>
-        </form>
-      </Modal>
-
-      <Modal
-        isOpen={showRegister}
-        onClose={() => setShowRegister(false)}
-        title="Create Your Account"
-      >
-        <form className="account-form" onSubmit={handleRegister}>
-          <p>Join our caring and supportive community.</p>
-
-          <label htmlFor="register-name">Full Name</label>
-          <input
-            id="register-name"
-            type="text"
-            value={registerData.name}
-            onChange={(event) =>
-              setRegisterData({
-                ...registerData,
-                name: event.target.value,
-              })
-            }
-            placeholder="Enter your full name"
-            required
-          />
-
-          <label htmlFor="register-email">Email Address</label>
-          <input
-            id="register-email"
-            type="email"
-            value={registerData.email}
-            onChange={(event) =>
-              setRegisterData({
-                ...registerData,
-                email: event.target.value,
-              })
-            }
-            placeholder="Enter your email"
-            required
-          />
-
-          <label htmlFor="register-password">Password</label>
-          <input
-            id="register-password"
-            type="password"
-            minLength={6}
-            value={registerData.password}
-            onChange={(event) =>
-              setRegisterData({
-                ...registerData,
-                password: event.target.value,
-              })
-            }
-            placeholder="Create a password"
-            required
-          />
-
-          <label htmlFor="register-role">I want to join as</label>
-          <select
-            id="register-role"
-            value={registerData.role}
-            onChange={(event) =>
-              setRegisterData({
-                ...registerData,
-                role: event.target.value,
-              })
-            }
+      {/* LOGIN MODAL */}
+      {showLogin && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowLogin(false)}
+        >
+          <div
+            className="modal"
+            onClick={(e) => e.stopPropagation()}
           >
-            <option value="User">User / Service Seeker</option>
-            <option value="Caregiver">Caregiver</option>
-            <option value="Volunteer">Volunteer</option>
-            <option value="Job Seeker">Job Seeker</option>
-          </select>
 
-          <button className="account-submit" type="submit">
-            Create Account
-          </button>
-
-          {notice && <p className="account-notice">{notice}</p>}
-
-          <p className="account-switch">
-            Already registered?{" "}
             <button
               type="button"
-              onClick={() => {
-                setNotice("");
-                setShowRegister(false);
-                setShowLogin(true);
-              }}
+              className="modal-close"
+              onClick={() => setShowLogin(false)}
             >
-              Login
+              ×
             </button>
-          </p>
-        </form>
-      </Modal>
 
-      <Modal
+            <h2>Welcome Back</h2>
+
+            <form onSubmit={handleLogin}>
+
+              <input
+                type="email"
+                placeholder="Enter Email"
+                value={loginData.email}
+                onChange={(e) =>
+                  setLoginData({
+                    ...loginData,
+                    email: e.target.value
+                  })
+                }
+                required
+              />
+
+              <input
+                type="password"
+                placeholder="Enter Password"
+                value={loginData.password}
+                onChange={(e) =>
+                  setLoginData({
+                    ...loginData,
+                    password: e.target.value
+                  })
+                }
+                required
+              />
+
+              <button
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? "Please wait..." : "Login"}
+              </button>
+
+            </form>
+
+            {notice && <p>{notice}</p>}
+
+            <p>
+              Don't have an account?{" "}
+              <button
+                type="button"
+                onClick={openRegister}
+              >
+                Register
+              </button>
+            </p>
+
+          </div>
+        </div>
+      )}
+
+      {/* REGISTER MODAL */}
+      {showRegister && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowRegister(false)}
+        >
+          <div
+            className="modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+
+            <button
+              type="button"
+              className="modal-close"
+              onClick={() => setShowRegister(false)}
+            >
+              ×
+            </button>
+
+            <h2>Create Account</h2>
+
+            <form onSubmit={handleRegister}>
+
+              <input
+                type="text"
+                placeholder="Enter Full Name"
+                value={registerData.name}
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    name: e.target.value
+                  })
+                }
+                required
+              />
+
+              <input
+                type="email"
+                placeholder="Enter Email"
+                value={registerData.email}
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    email: e.target.value
+                  })
+                }
+                required
+              />
+
+              <input
+                type="password"
+                placeholder="Create Password"
+                value={registerData.password}
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    password: e.target.value
+                  })
+                }
+                required
+              />
+
+              <button
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? "Please wait..." : "Register"}
+              </button>
+
+            </form>
+
+            {notice && <p>{notice}</p>}
+
+            <p>
+              Already have an account?{" "}
+              <button
+                type="button"
+                onClick={openLogin}
+              >
+                Login
+              </button>
+            </p>
+
+          </div>
+        </div>
+      )}
+
+      {/* EMERGENCY SOS */}
+      <EmergencySOS
         isOpen={showSOS}
         onClose={() => setShowSOS(false)}
-        title="Emergency SOS"
-      >
-        <div className="sos-content">
-          <div className="sos-symbol">!</div>
-          <h3>Do you need emergency assistance?</h3>
-          <p>
-            If you are in immediate danger, contact your local emergency
-            services directly. This demo button does not send an SOS alert
-            or share your location.
-          </p>
-          <button
-            className="account-submit"
-            type="button"
-            onClick={() => setShowSOS(false)}
-          >
-            Close
-          </button>
-        </div>
-      </Modal>
+      />
+
     </div>
   );
 }
+
+export default App;

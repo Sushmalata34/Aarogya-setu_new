@@ -1,35 +1,213 @@
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+/* =====================================
+   AAROGYA SETU - SAGE GREEN THEME
+   ===================================== */
 
 :root {
-  font-family: 'DM Sans', sans-serif;
-  color: #183b35;
-  background: #ffffff;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --sage-bg: #F7F4EA;
+  --sage-light: #E8EFE7;
+  --sage-pale: #DCE9DF;
+  --sage-primary: #477C70;
+  --sage-hover: #365F55;
+  --sage-dark: #304C40;
+  --sage-text: #52675B;
+  --sage-border: #D5E2D7;
+  --sage-white: #FFFEF8;
 }
 
-* {
-  box-sizing: border-box;
-}
+/* ===== Main Website Background ===== */
 
 body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
+  background-color: var(--sage-bg);
+  color: var(--sage-dark);
 }
 
-button, input, textarea, select {
-  font: inherit;
+/* ===== Common Headings ===== */
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--sage-dark);
 }
 
-button {
-  cursor: pointer;
+/* ===== Navbar and Header ===== */
+
+header,
+.navbar,
+nav {
+  background-color: var(--sage-white);
+  border-color: var(--sage-border);
 }
 
-#root {
-  width: 100%;
-  min-height: 100vh;
+nav a,
+.navbar a {
+  color: var(--sage-dark);
+}
+
+nav a:hover,
+.navbar a:hover {
+  color: var(--sage-primary);
+}
+
+/* ===== Main Buttons ===== */
+
+button,
+.btn,
+.primary-button {
+  transition: background-color 0.2s ease,
+              color 0.2s ease,
+              border-color 0.2s ease;
+}
+
+button:not(.sos-button):not(.logout-button) {
+  border-color: var(--sage-primary);
+}
+
+.service-primary-button,
+.primary-button,
+.btn-primary {
+  background-color: var(--sage-primary);
+  color: #FFFFFF;
+  border-color: var(--sage-primary);
+}
+
+.service-primary-button:hover,
+.primary-button:hover,
+.btn-primary:hover {
+  background-color: var(--sage-hover);
+}
+
+/* ===== Common Cards ===== */
+
+.card,
+.service-card,
+.about-card,
+.feature-card,
+.community-card {
+  background-color: var(--sage-white);
+  border-color: var(--sage-border);
+}
+
+/* ===== Forms ===== */
+
+input,
+textarea,
+select {
+  background-color: var(--sage-white);
+  color: var(--sage-dark);
+  border-color: var(--sage-border);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--sage-primary);
+  outline-color: var(--sage-primary);
+}
+
+/* ===== Links ===== */
+
+a {
+  color: var(--sage-primary);
+}
+
+a:hover {
+  color: var(--sage-hover);
+}
+
+/* ===== Common Sections ===== */
+
+section {
+  border-color: var(--sage-border);
+}
+
+/* ===== Services Page ===== */
+
+.services-page {
+  background-color: var(--sage-bg);
+}
+
+.services-hero {
+  background: linear-gradient(
+    135deg,
+    var(--sage-light),
+    var(--sage-bg)
+  );
+}
+
+.services-heading h2,
+.services-hero h1 {
+  color: var(--sage-dark);
+}
+
+.service-detail {
+  background-color: var(--sage-white);
+  border-color: var(--sage-border);
+}
+
+.service-back-button {
+  background-color: var(--sage-light);
+  color: var(--sage-dark);
+  border-color: var(--sage-border);
+}
+
+.services-help {
+  background-color: var(--sage-light);
+  border-color: var(--sage-border);
+}
+
+/* ===== Entertainment ===== */
+
+.entertainment-banner,
+.entertainment-footer {
+  background-color: var(--sage-light);
+}
+
+.entertainment-card {
+  background-color: var(--sage-white);
+  border-color: var(--sage-border);
+}
+
+.entertainment-card a {
+  background-color: var(--sage-primary);
+  color: #FFFFFF;
+}
+
+.entertainment-card a:hover {
+  background-color: var(--sage-hover);
+}
+
+/* ===== Footer ===== */
+
+footer {
+  background-color: var(--sage-dark);
+  color: #F7F4EA;
+}
+
+footer h1,
+footer h2,
+footer h3,
+footer p,
+footer a {
+  color: #F7F4EA;
+}
+
+/* ===== Success Messages ===== */
+
+.service-feedback {
+  background-color: #EAF3E9;
+  border-color: #C8DDCB;
+  color: #365F45;
+}
+
+/* ===== Accessibility Focus ===== */
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid #83AFA0;
+  outline-offset: 3px;
 }
